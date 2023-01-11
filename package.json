@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/Alex-Kondakov/freekassa/issues"
   },
-  "homepage": "https://github.com/Alex-Kondakov/freekassa#readme"
+  "homepage": "https://github.com/Alex-Kondakov/freekassa#readme",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
 }

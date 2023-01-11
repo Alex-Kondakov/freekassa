@@ -1,0 +1,150 @@
+const crypto = require('crypto')
+const fetch = require('node-fetch')
+
+//Init parameters are required to generate signatures
+exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, amount = null, currency = 'RUB', payment = null) => {
+    return {
+        //MANDATORY
+        _payUrl: 'https://pay.freekassa.ru',
+        _apiUrl: 'https://api.freekassa.ru/v1',
+        _key: key,
+        _secret1: secret1,
+        _secret2: secret2,
+        _merchantId: merchantId,
+        _amount: amount,
+        _currency: currency,
+        _payment: payment,
+        _signatureForm: crypto.createHash('md5').update(`${merchantId}:${amount}:${secret1}:${currency}:${payment}`).digest('hex').toString(),
+        _signatureNotification: crypto.createHash('md5').update(`${merchantId}:${amount}:${secret2}:${payment}`).digest('hex').toString(),
+
+        //OPTIONAL
+        _paymentOption: null,
+        _phone: null,
+        _email: null,
+        _lang: 'en',
+
+        //SETTERS
+        set key (newKey) {
+            this._key = newKey
+        },
+        set secret1 (newSecret1) {
+            this._secret1 = newSecret1
+        },
+        set secret2 (newSecret2) {
+            this._secret2 = newSecret2
+        },
+        set merchantId (newMerchantId) {
+            this._merchantId = newMerchantId
+        },
+        set amount (newAmount) {
+            this._amount = newAmount
+        },
+        set currency (newCurrency) {
+            this._currency = newCurrency
+        },
+        set payment (newPayment) {
+            this._payment = newPayment
+        },
+        set paymentOption (newPaymentOption) {
+            this._paymentOption = newPaymentOption
+        },
+        set phone (newPhone) {
+            this._phone = newPhone
+        },
+        set email (newEmail) {
+            this._email = newEmail
+        },
+        set lang (newLang) {
+            this._lang = newLang
+        },
+
+        //GETTERS
+        get key () {
+            return this._key
+        },
+        get secret1 () {
+            return this._secret1
+        },
+        get secret2 () {
+            return this._secret2
+        },
+        get merchantId () {
+            return this._merchantId
+        },
+        get amount () {
+            return this._amount
+        },
+        get currency () {
+            return this._currency
+        },
+        get payment () {
+            return this._payment
+        },
+        get signatureForm () {
+            return this._signatureForm
+        },
+        get signatureNotification () {
+            return this._signatureNotification
+        },
+        get paymentOption () {
+            return this._paymentOption
+        },
+        get phone () {
+            return this._phone
+        },
+        get email () {
+            return this._email
+        },
+        get lang () {
+            return this._lang
+        },
+
+        //PRIVATE METHODS
+        //Send API request
+        _request (requestMethod, requestEndPoint, requestBody) {
+            return new Promise ((resolve, reject) => {
+
+            })
+        },
+
+
+        //PUBLIC METHODS
+        //Generate new signatures
+        sign () {
+            this._signatureForm = crypto.createHash('md5').update(`${this._merchantId}:${this._amount}:${this._secret1}:${this._currency}:${this._payment}`).digest('hex').toString()
+            this._signatureNotification = crypto.createHash('md5').update(`${this._merchantId}:${this._amount}:${this._secret2}:${this._payment}`).digest('hex').toString()
+        },
+
+        //Create payment form link. Method generate url with accesible request parameters. Returns payment form URL or false is fail
+        create () {
+            //Mandatory parameters
+            if (this._merchantId && this._amount && this._currency && this._payment && this._signatureForm) {
+                //Check optional parameters and add if any
+                let params = [
+                    `m=${this._merchantId}`,
+                    `oa=${this._amount}`,
+                    `currency=${this._currency}`,
+                    `o=${this._payment}`,
+                    `s=${this._signatureForm}`
+                ]
+                let num
+                if (this._paymentOption) {
+                    num = params.push(`i=${this._paymentOption}`)
+                }
+                if (this._phone) {
+                    num = params.push(`phone=${this._phone}`)
+                }
+                if (this._email) {
+                    num = params.push(`em=${this._email}`)
+                }
+                if (this._lang) {
+                    num = params.push(`lang=${this._lang}`)
+                }
+                return `${this._payUrl}/?${params.join('&')}`
+            } else {
+                return false
+            }
+        }
+
+    }
+}

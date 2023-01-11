@@ -100,10 +100,27 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         },
 
         //PRIVATE METHODS
-        //Send API request
-        _request (requestMethod, requestEndPoint, requestBody) {
-            return new Promise ((resolve, reject) => {
+        //Calculate signature for API request
+        _signature (data) {
+            let output = Object.keys(data).sort().map(key => data[key]).join('|')
+            return output
+        },
 
+        //Send API request. requestBody contain everything except nonce and signature, it should be calculated basing in other request props
+        _request (requestMethod, requestEndPoint, requestBody) {
+            return new Promise (async (resolve, reject) => {
+                try {
+                    requestBody.nonce = new Date().getTime().toString()
+                    requestBody.signature = this._signature(requestBody)
+                    const response = await fetch(requestEndPoint, {
+                        method: requestMethod,
+                        body: JSON.stringify(requestBody)
+                    })
+                    const data = await response.json()
+                    resolve(JSON.stringify(data))
+                } catch (e) {
+                    reject(e)
+                }
             })
         },
 
@@ -144,6 +161,20 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
             } else {
                 return false
             }
+        },
+
+        //Get list of shops. Returns promise
+        shops () {
+            return this._request('POST', `${this._apiUrl}/shops`, {
+                shopId: parseInt(this._merchantId)
+            })
+        },
+
+        //Available payment options. Returns promise
+        currenciesStatus () {
+            return this._request('POST', `${this._apiUrl}/currencies/${this._merchantId}/status`, {
+                shopId: parseInt(this._merchantId)
+            })
         }
 
     }

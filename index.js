@@ -103,7 +103,8 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         //Calculate signature for API request
         _signature (data) {
             let output = Object.keys(data).sort().map(key => data[key]).join('|')
-            return output
+            let hmac = crypto.createHmac('sha256', this._key)
+            return hmac.update(output).digest('hex').toString()
         },
 
         //Send API request. requestBody contain everything except nonce and signature, it should be calculated basing in other request props
@@ -117,7 +118,7 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
                         body: JSON.stringify(requestBody)
                     })
                     const data = await response.json()
-                    resolve(JSON.stringify(data))
+                    resolve(data)
                 } catch (e) {
                     reject(e)
                 }
@@ -170,12 +171,89 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
             })
         },
 
-        //Available payment options. Returns promise
-        currenciesStatus () {
-            return this._request('POST', `${this._apiUrl}/currencies/${this._merchantId}/status`, {
+        //Withdravals list. OPTIONAL: orderId - withdrawal id (Freekassa), paymentId - withdrawal id (yours), orderStatus - withdrawal status, dateFrom - withdrawal date from, dateTo - withdrawal date to, page - output page
+        withdrawals (orderId, paymentId, orderStatus, dateFrom, dateTo, page) {
+            //Mandatory props
+            let requestBody = {
+                shopId: parseInt(this._merchantId)
+            }
+            //Optional props
+            if (orderId) {
+                requestBody.orderId = parseInt(orderId)
+            }
+            if (orderId) {
+                requestBody.paymentId = paymentId.toString()
+            }
+            if (orderStatus) {
+                requestBody.orderStatus = parseInt(orderStatus)
+            }
+            if (dateFrom) {
+                requestBody.dateFrom = dateFrom.toString()
+            }
+            if (dateTo) {
+                requestBody.dateTo = dateTo.toString()
+            }
+            if (page) {
+                requestBody.page = parseInt(page)
+            }
+            return this._request('POST', `${this._apiUrl}/withdrawals`, requestBody)
+        },
+
+        //Create withdrawal. MANDATORY parameters: i - payment system id, account - your payment system wallet, amount - withdrawal amount, currency - currency. OPTIONAL parameter: paymentId - stands for your service internal withdrawal id. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
+        withdrawalsCreate (i, account, amount, currency, paymentId) {
+            return new Promise ((resolve, reject) => {
+                try {
+                    if (!i || !account || !amount || !currency) {
+                        throw false
+                    }
+                    //Mandatory props
+                    let requestBody = {
+                        shopId: parseInt(this._merchantId),
+                        i: parseInt(i),
+                        account: account.toString(),
+                        amount: Number(amount),
+                        currency: currency.toString()
+                    }
+                    //Optional props
+                    if (paymentId) {
+                        requestBody.paymentId = paymentId.toString()
+                    }
+                    this._request('POST', `${this._apiUrl}/withdrawals/create`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
+            })
+            .catch(e => e)
+        },
+
+        //Available payment systems for withdrawal. Returns promise
+        withdrawalsCurrencies () {
+            return this._request('POST', `${this._apiUrl}/withdrawals/currencies`, {
                 shopId: parseInt(this._merchantId)
             })
-        }
+        },
 
+        //Available payment systems. Returns promise
+        currencies () {
+            return this._request('POST', `${this._apiUrl}/currencies`, {
+                shopId: parseInt(this._merchantId)
+            })
+        },
+
+        //Status of payment system by it's id (available or not for your shop). Returns promise
+        currenciesStatus (id) {
+            return this._request('POST', `${this._apiUrl}/currencies/${id}/status`, {
+                shopId: parseInt(this._merchantId)
+            })
+        },
+
+        //Shop balance. Returns promise
+        balance () {
+            return this._request('POST', `${this._apiUrl}/balance`, {
+                shopId: parseInt(this._merchantId)
+            })
+        },
     }
 }

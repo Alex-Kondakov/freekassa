@@ -2,26 +2,26 @@ const crypto = require('crypto')
 const fetch = require('node-fetch')
 
 //Init parameters are required to generate signatures
-exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, amount = null, currency = 'RUB', payment = null) => {
+exports.init = () => {
     return {
         //MANDATORY
         _payUrl: 'https://pay.freekassa.ru',
         _apiUrl: 'https://api.freekassa.ru/v1',
-        _key: key,
-        _secret1: secret1,
-        _secret2: secret2,
-        _merchantId: merchantId,
-        _amount: amount,
-        _currency: currency,
-        _payment: payment,
-        _signatureForm: crypto.createHash('md5').update(`${merchantId}:${amount}:${secret1}:${currency}:${payment}`).digest('hex').toString(),
-        _signatureNotification: crypto.createHash('md5').update(`${merchantId}:${amount}:${secret2}:${payment}`).digest('hex').toString(),
-
-        //OPTIONAL
-        _paymentOption: null,
-        _phone: null,
+        _lang: 'ru',
+        _currency: 'RUB',
+        _key: null,
+        _secret1: null,
+        _secret2: null,
+        _shopId: null,
+        _paymentId: null,
+        _amount: null,
+        _i: null,
+        _tel: null,
         _email: null,
-        _lang: 'en',
+        _ip: null,
+        _signatureForm: null,
+        _signatureNotification: null,
+
 
         //SETTERS
         set key (newKey) {
@@ -33,8 +33,8 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         set secret2 (newSecret2) {
             this._secret2 = newSecret2
         },
-        set merchantId (newMerchantId) {
-            this._merchantId = newMerchantId
+        set shopId (newShopId) {
+            this._shopId = newShopId
         },
         set amount (newAmount) {
             this._amount = newAmount
@@ -42,14 +42,14 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         set currency (newCurrency) {
             this._currency = newCurrency
         },
-        set payment (newPayment) {
-            this._payment = newPayment
+        set paymentId (newPaymentId) {
+            this._paymentId = newPaymentId
         },
-        set paymentOption (newPaymentOption) {
-            this._paymentOption = newPaymentOption
+        set i (newI) {
+            this._i = newI
         },
-        set phone (newPhone) {
-            this._phone = newPhone
+        set tel (newTel) {
+            this._tel = newTel
         },
         set email (newEmail) {
             this._email = newEmail
@@ -68,8 +68,8 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         get secret2 () {
             return this._secret2
         },
-        get merchantId () {
-            return this._merchantId
+        get shopId () {
+            return this._shopId
         },
         get amount () {
             return this._amount
@@ -77,8 +77,8 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         get currency () {
             return this._currency
         },
-        get payment () {
-            return this._payment
+        get paymentId () {
+            return this._paymentId
         },
         get signatureForm () {
             return this._signatureForm
@@ -86,11 +86,11 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         get signatureNotification () {
             return this._signatureNotification
         },
-        get paymentOption () {
-            return this._paymentOption
+        get i () {
+            return this._i
         },
-        get phone () {
-            return this._phone
+        get tel () {
+            return this._tel
         },
         get email () {
             return this._email
@@ -129,28 +129,28 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         //PUBLIC METHODS
         //Generate new signatures
         sign () {
-            this._signatureForm = crypto.createHash('md5').update(`${this._merchantId}:${this._amount}:${this._secret1}:${this._currency}:${this._payment}`).digest('hex').toString()
-            this._signatureNotification = crypto.createHash('md5').update(`${this._merchantId}:${this._amount}:${this._secret2}:${this._payment}`).digest('hex').toString()
+            this._signatureForm = crypto.createHash('md5').update(`${this._shopId}:${this._amount}:${this._secret1}:${this._currency}:${this._paymentId}`).digest('hex').toString()
+            this._signatureNotification = crypto.createHash('md5').update(`${this._shopId}:${this._amount}:${this._secret2}:${this._paymentId}`).digest('hex').toString()
         },
 
         //Create payment form link. Method generate url with accesible request parameters. Returns payment form URL or false is fail
         create () {
             //Mandatory parameters
-            if (this._merchantId && this._amount && this._currency && this._payment && this._signatureForm) {
+            if (this._shopId && this._amount && this._currency && this._paymentId && this._signatureForm) {
                 //Check optional parameters and add if any
                 let params = [
-                    `m=${this._merchantId}`,
+                    `m=${this._shopId}`,
                     `oa=${this._amount}`,
                     `currency=${this._currency}`,
-                    `o=${this._payment}`,
+                    `o=${this._paymentId}`,
                     `s=${this._signatureForm}`
                 ]
                 let num
                 if (this._paymentOption) {
                     num = params.push(`i=${this._paymentOption}`)
                 }
-                if (this._phone) {
-                    num = params.push(`phone=${this._phone}`)
+                if (this._tel) {
+                    num = params.push(`phone=${this._tel}`)
                 }
                 if (this._email) {
                     num = params.push(`em=${this._email}`)
@@ -164,18 +164,53 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
             }
         },
 
-        //Get list of shops. Returns promise
-        shops () {
-            return this._request('POST', `${this._apiUrl}/shops`, {
-                shopId: parseInt(this._merchantId)
+        //Create order. MANDATORY parameters: i - payment system id, email - customer email, ip - customer IP, amount - order amount, currency - currency. OPTIONAL parameter: paymentId - stands for your service internal order id, tel - customer phone number, success_url - custom success url (using this must be allowed by staff), failure_url - custom fail url (using this must be allowed by staff), notification_url - custom notification url (using this must be allowed by staff). Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
+        ordersCreate (i, email, ip, amount, currency, paymentId, tel, success_url, failure_url, notification_url) {
+            return new Promise ((resolve, reject) => {
+                try {
+                    if (!i || !email || !ip || !amount || !currency || !this._shopId) {
+                        throw false
+                    }
+                    //Mandatory props
+                    let requestBody = {
+                        shopId: parseInt(this._shopId),
+                        i: parseInt(i),
+                        email: email.toString(),
+                        ip: ip.toString(),
+                        amount: Number(amount),
+                        currency: currency.toString()
+                    }
+                    //Optional props
+                    if (paymentId) {
+                        requestBody.paymentId = paymentId.toString()
+                    }
+                    if (tel) {
+                        requestBody.tel = tel.toString()
+                    }
+                    if (success_url) {
+                        requestBody['success_url'] = success_url.toString()
+                    }
+                    if (failure_url) {
+                        requestBody['failure_url'] = failure_url.toString()
+                    }
+                    if (notification_url) {
+                        requestBody['notification_url'] = notification_url.toString()
+                    }
+                    this._request('POST', `${this._apiUrl}/orders/create`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
             })
+            .catch(e => e)
         },
 
         //Withdravals list. OPTIONAL: orderId - withdrawal id (Freekassa), paymentId - withdrawal id (yours), orderStatus - withdrawal status, dateFrom - withdrawal date from, dateTo - withdrawal date to, page - output page
         withdrawals (orderId, paymentId, orderStatus, dateFrom, dateTo, page) {
             //Mandatory props
             let requestBody = {
-                shopId: parseInt(this._merchantId)
+                shopId: parseInt(this._shopId)
             }
             //Optional props
             if (orderId) {
@@ -203,12 +238,12 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
         withdrawalsCreate (i, account, amount, currency, paymentId) {
             return new Promise ((resolve, reject) => {
                 try {
-                    if (!i || !account || !amount || !currency) {
+                    if (!i || !account || !amount || !currency || this._shopId) {
                         throw false
                     }
                     //Mandatory props
                     let requestBody = {
-                        shopId: parseInt(this._merchantId),
+                        shopId: parseInt(this._shopId),
                         i: parseInt(i),
                         account: account.toString(),
                         amount: Number(amount),
@@ -228,32 +263,109 @@ exports.init = (key = null, secret1 = null, secret2 = null, merchantId = null, a
             .catch(e => e)
         },
 
-        //Available payment systems for withdrawal. Returns promise
-        withdrawalsCurrencies () {
-            return this._request('POST', `${this._apiUrl}/withdrawals/currencies`, {
-                shopId: parseInt(this._merchantId)
+        //Shop balance. Returns promise
+        balance () {
+            return new Promise((resolve, reject) => {
+                try {
+                    //Mandatory props
+                    if(!this._shopId) {
+                        throw false
+                    }
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    this._request('POST', `${this._apiUrl}/balance`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
             })
+            .catch(e => e)
         },
 
-        //Available payment systems. Returns promise
+        //Available payment systems to purchase from your shop. Returns promise
         currencies () {
-            return this._request('POST', `${this._apiUrl}/currencies`, {
-                shopId: parseInt(this._merchantId)
+            return new Promise((resolve, reject) => {
+                try {
+                    //Mandatory props
+                    if(!this._shopId) {
+                        throw false
+                    }
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    this._request('POST', `${this._apiUrl}/currencies`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
             })
+            .catch(e => e)
         },
 
         //Status of payment system by it's id (available or not for your shop). Returns promise
-        currenciesStatus (id) {
-            return this._request('POST', `${this._apiUrl}/currencies/${id}/status`, {
-                shopId: parseInt(this._merchantId)
+        currenciesStatus () {
+            return new Promise((resolve, reject) => {
+                try {
+                    //Mandatory props
+                    if(!this._shopId || !this._i) {
+                        throw false
+                    }
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    this._request('POST', `${this._apiUrl}/currencies/${this._i}/status`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
             })
+            .catch(e => e)
         },
 
-        //Shop balance. Returns promise
-        balance () {
-            return this._request('POST', `${this._apiUrl}/balance`, {
-                shopId: parseInt(this._merchantId)
+        //Available payment systems for withdrawal. Returns promise
+        withdrawalsCurrencies () {
+            return new Promise((resolve, reject) => {
+                try {
+                    //Mandatory props
+                    if(!this._shopId) {
+                        throw false
+                    }
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    this._request('POST', `${this._apiUrl}/withdrawals/currencies`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
             })
+            .catch(e => e)
         },
+
+        //Get list of shops. Returns promise
+        shops () {
+            return new Promise((resolve, reject) => {
+                try {
+                    //Mandatory props
+                    if(!this._shopId) {
+                        throw false
+                    }
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    this._request('POST', `${this._apiUrl}/shops`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
+            })
+            .catch(e => e)
+        }
     }
 }

@@ -5,22 +5,31 @@ const fetch = require('node-fetch')
 exports.init = () => {
     return {
         //MANDATORY
-        _payUrl: 'https://pay.freekassa.ru',
-        _apiUrl: 'https://api.freekassa.ru/v1',
-        _lang: 'ru',
-        _currency: 'RUB',
-        _key: null,
-        _secret1: null,
-        _secret2: null,
-        _shopId: null,
-        _paymentId: null,
-        _amount: null,
-        _i: null,
-        _tel: null,
-        _email: null,
-        _ip: null,
-        _signatureForm: null,
-        _signatureNotification: null,
+        _payUrl: 'https://pay.freekassa.ru', //Payment form base URL
+        _apiUrl: 'https://api.freekassa.ru/v1', //API base URL
+        _lang: 'ru', //Payment form language
+        _currency: 'RUB', //Payment or withdrawal currency
+        _key: null, //API key
+        _secret1: null, //Secret word #1
+        _secret2: null, //Secret word #2
+        _shopId: null, //Shop (merchant) ID
+        _paymentId: null, //Payment id on merchant side
+        _orderId: null, //Order (payment) id on Freekassa side
+        _orderStatus: null, //Order (payment) id on Freekassa side (statuses available: 0 - new, 1 - success, 8 - fail, 9 - cancel)
+        _amount: null, //Payment amount
+        _i: null, //Payment method id (payment systems available: https://docs.freekassa.ru/#section/1.-Vvedenie/1.7.-Spisok-dostupnyh-valyut)
+        _tel: null, //Customer phone number
+        _email: null, //Customer email
+        _ip: null, //Customer IP
+        _account: null, //Payment system wallet (for withdrawals request, for example)
+        _dateFrom: null, //Data selection FROM date (for withdrawals or orders selection)
+        _dateTo: null, //Data selection TO date (for withdrawals or orders selection)
+        _page: null, //Data selection page number (for withdrawals or orders selection)
+        _success_url: null, //Custom success url (this option must be enabled by Freekassa)
+        _failure_url: null, //Custom failure uel (this option must be enabled by Freekassa)
+        _notification_url: null, //Custom notification url (this option must be enabled by Freekassa)
+        _signatureForm: null, //Signature for form generation
+        _signatureNotification: null, //Signature to confirm notifications from Freekassa
 
 
         //SETTERS
@@ -51,11 +60,41 @@ exports.init = () => {
         set tel (newTel) {
             this._tel = newTel
         },
+        set ip (newIp) {
+            this._ip = newIp
+        },
         set email (newEmail) {
             this._email = newEmail
         },
         set lang (newLang) {
             this._lang = newLang
+        },
+        set account (newAccount) {
+            this._account = newAccount
+        },
+        set orderId (newOrderId) {
+            this._orderId = newOrderId
+        },
+        set orderStatus (newOrderStatus) {
+            this._orderStatus = newOrderStatus
+        },
+        set dateFrom (newDateFrom) {
+            this._dateFrom = newDateFrom
+        },
+        set dateTo (newDateTo) {
+            this._dateTo = newDateTo
+        },
+        set page (newPage) {
+            this._page = newPage
+        },
+        set success_url (newSuccess_url) {
+            this._success_url = newSuccess_url
+        },
+        set failure_url (newFailure_url) {
+            this._failure_url = newFailure_url
+        },
+        set notification_url (newNotification_url) {
+            this._notification_url = newNotification_url
         },
 
         //GETTERS
@@ -89,6 +128,9 @@ exports.init = () => {
         get i () {
             return this._i
         },
+        get ip () {
+            return this._ip
+        },
         get tel () {
             return this._tel
         },
@@ -97,6 +139,33 @@ exports.init = () => {
         },
         get lang () {
             return this._lang
+        },
+        get account () {
+            return this._account
+        },
+        get orderId () {
+            return this._orderId
+        },
+        get orderStatus () {
+            return this._orderStatus
+        },
+        get dateFrom () {
+            return this._dateFrom
+        },
+        get dateTo () {
+            return this._dateTo
+        },
+        get page () {
+            return this._page
+        },
+        get success_url () {
+            return this._success_url
+        },
+        get failure_url () {
+            return this._failure_url
+        },
+        get notification_url () {
+            return this._notification_url
         },
 
         //PRIVATE METHODS
@@ -164,37 +233,37 @@ exports.init = () => {
             }
         },
 
-        //Create order. MANDATORY parameters: i - payment system id, email - customer email, ip - customer IP, amount - order amount, currency - currency. OPTIONAL parameter: paymentId - stands for your service internal order id, tel - customer phone number, success_url - custom success url (using this must be allowed by staff), failure_url - custom fail url (using this must be allowed by staff), notification_url - custom notification url (using this must be allowed by staff). Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
-        ordersCreate (i, email, ip, amount, currency, paymentId, tel, success_url, failure_url, notification_url) {
+        //Create order. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
+        ordersCreate () {
             return new Promise ((resolve, reject) => {
                 try {
-                    if (!i || !email || !ip || !amount || !currency || !this._shopId) {
+                    if (!this._i || !this._email || !this._ip || !this._amount || !this._currency || !this._key || !this._shopId) {
                         throw false
                     }
                     //Mandatory props
                     let requestBody = {
                         shopId: parseInt(this._shopId),
-                        i: parseInt(i),
-                        email: email.toString(),
-                        ip: ip.toString(),
-                        amount: Number(amount),
-                        currency: currency.toString()
+                        i: parseInt(this._i),
+                        email: this._email.toString(),
+                        ip: this._ip.toString(),
+                        amount: Number(this._amount),
+                        currency: this._currency.toString()
                     }
                     //Optional props
-                    if (paymentId) {
-                        requestBody.paymentId = paymentId.toString()
+                    if (this._paymentId) {
+                        requestBody.paymentId = this._paymentId.toString()
                     }
-                    if (tel) {
-                        requestBody.tel = tel.toString()
+                    if (this._tel) {
+                        requestBody.tel = this._tel.toString()
                     }
-                    if (success_url) {
-                        requestBody['success_url'] = success_url.toString()
+                    if (this._success_url) {
+                        requestBody['success_url'] = this._success_url.toString()
                     }
-                    if (failure_url) {
-                        requestBody['failure_url'] = failure_url.toString()
+                    if (this._failure_url) {
+                        requestBody['failure_url'] = this._failure_url.toString()
                     }
-                    if (notification_url) {
-                        requestBody['notification_url'] = notification_url.toString()
+                    if (this._notification_url) {
+                        requestBody['notification_url'] = this._notification_url.toString()
                     }
                     this._request('POST', `${this._apiUrl}/orders/create`, requestBody)
                         .then(response => resolve(response))
@@ -206,52 +275,64 @@ exports.init = () => {
             .catch(e => e)
         },
 
-        //Withdravals list. OPTIONAL: orderId - withdrawal id (Freekassa), paymentId - withdrawal id (yours), orderStatus - withdrawal status, dateFrom - withdrawal date from, dateTo - withdrawal date to, page - output page
-        withdrawals (orderId, paymentId, orderStatus, dateFrom, dateTo, page) {
-            //Mandatory props
-            let requestBody = {
-                shopId: parseInt(this._shopId)
-            }
-            //Optional props
-            if (orderId) {
-                requestBody.orderId = parseInt(orderId)
-            }
-            if (orderId) {
-                requestBody.paymentId = paymentId.toString()
-            }
-            if (orderStatus) {
-                requestBody.orderStatus = parseInt(orderStatus)
-            }
-            if (dateFrom) {
-                requestBody.dateFrom = dateFrom.toString()
-            }
-            if (dateTo) {
-                requestBody.dateTo = dateTo.toString()
-            }
-            if (page) {
-                requestBody.page = parseInt(page)
-            }
-            return this._request('POST', `${this._apiUrl}/withdrawals`, requestBody)
-        },
-
-        //Create withdrawal. MANDATORY parameters: i - payment system id, account - your payment system wallet, amount - withdrawal amount, currency - currency. OPTIONAL parameter: paymentId - stands for your service internal withdrawal id. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
-        withdrawalsCreate (i, account, amount, currency, paymentId) {
+        //Withdravals list. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
+        withdrawals () {
             return new Promise ((resolve, reject) => {
                 try {
-                    if (!i || !account || !amount || !currency || this._shopId) {
+                    if (!this._key || !this._shopId) {
+                        throw false
+                    }
+                    //Mandatory props
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    //Optional props
+                    if (this._orderId) {
+                        requestBody.orderId = parseInt(this._orderId)
+                    }
+                    if (this._paymentId) {
+                        requestBody.paymentId = this._paymentId.toString()
+                    }
+                    if (this._orderStatus) {
+                        requestBody.orderStatus = parseInt(this._orderStatus)
+                    }
+                    if (this._dateFrom) {
+                        requestBody.dateFrom = this._dateFrom.toString()
+                    }
+                    if (this._dateTo) {
+                        requestBody.dateTo = this._dateTo.toString()
+                    }
+                    if (this._page) {
+                        requestBody.page = parseInt(this._page)
+                    }
+                    this._request('POST', `${this._apiUrl}/withdrawals`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
+                }
+            })
+            .catch(e => e)
+        },
+
+        //Create withdrawal. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
+        withdrawalsCreate () {
+            return new Promise ((resolve, reject) => {
+                try {
+                    if (!this._i || !this._account || !this._amount || !this._currency || !this._key || !this._shopId) {
                         throw false
                     }
                     //Mandatory props
                     let requestBody = {
                         shopId: parseInt(this._shopId),
-                        i: parseInt(i),
-                        account: account.toString(),
-                        amount: Number(amount),
-                        currency: currency.toString()
+                        i: parseInt(this._i),
+                        account: this._account.toString(),
+                        amount: Number(this._amount),
+                        currency: this._currency.toString()
                     }
                     //Optional props
-                    if (paymentId) {
-                        requestBody.paymentId = paymentId.toString()
+                    if (this._paymentId) {
+                        requestBody.paymentId = this._paymentId.toString()
                     }
                     this._request('POST', `${this._apiUrl}/withdrawals/create`, requestBody)
                         .then(response => resolve(response))
@@ -263,12 +344,12 @@ exports.init = () => {
             .catch(e => e)
         },
 
-        //Shop balance. Returns promise
+        //Shop balance. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
         balance () {
             return new Promise((resolve, reject) => {
                 try {
                     //Mandatory props
-                    if(!this._shopId) {
+                    if(!this._key || !this._shopId) {
                         throw false
                     }
                     let requestBody = {
@@ -284,12 +365,12 @@ exports.init = () => {
             .catch(e => e)
         },
 
-        //Available payment systems to purchase from your shop. Returns promise
+        //Available payment systems to purchase from your shop. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
         currencies () {
             return new Promise((resolve, reject) => {
                 try {
                     //Mandatory props
-                    if(!this._shopId) {
+                    if(!this._key || !this._shopId) {
                         throw false
                     }
                     let requestBody = {
@@ -305,12 +386,12 @@ exports.init = () => {
             .catch(e => e)
         },
 
-        //Status of payment system by it's id (available or not for your shop). Returns promise
+        //Status of payment system by it's id (available or not for your shop). Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
         currenciesStatus () {
             return new Promise((resolve, reject) => {
                 try {
                     //Mandatory props
-                    if(!this._shopId || !this._i) {
+                    if(!this._key || !this._shopId || !this._i) {
                         throw false
                     }
                     let requestBody = {
@@ -326,12 +407,12 @@ exports.init = () => {
             .catch(e => e)
         },
 
-        //Available payment systems for withdrawal. Returns promise
+        //Available payment systems for withdrawal. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
         withdrawalsCurrencies () {
             return new Promise((resolve, reject) => {
                 try {
                     //Mandatory props
-                    if(!this._shopId) {
+                    if(!this._key || !this._shopId) {
                         throw false
                     }
                     let requestBody = {
@@ -347,12 +428,12 @@ exports.init = () => {
             .catch(e => e)
         },
 
-        //Get list of shops. Returns promise
+        //Get list of shops. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
         shops () {
             return new Promise((resolve, reject) => {
                 try {
                     //Mandatory props
-                    if(!this._shopId) {
+                    if(!this._key || !this._shopId) {
                         throw false
                     }
                     let requestBody = {

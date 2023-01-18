@@ -3,14 +3,14 @@
 
 ## Module install
 ```bash
-# npm install freekassa --save
+# npm install @alex-kondakov/freekassa --save
 ```
 
 ## Basic usage examples
 ### Payment form generation
 ```js
 //Module initialization
-const freekassa = require('freekassa').init()
+const freekassa = require('@alex-kondakov/freekassa').init()
 
 //Set props
 freekassa.secret1 = 'Secret word #1'
@@ -34,7 +34,7 @@ freekassa.sign();
 ### Balance check
 ```js
 //Module initialization
-const freekassa = require('freekassa').init()
+const freekassa = require('@alex-kondakov/freekassa').init()
 
 //Set props
 freekassa.key = 'API key'

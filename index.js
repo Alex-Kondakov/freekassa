@@ -204,33 +204,80 @@ exports.init = () => {
 
         //Create payment form link. Method generate url with accesible request parameters. Returns payment form URL or false is fail
         create () {
-            //Mandatory parameters
-            if (this._shopId && this._amount && this._currency && this._paymentId && this._signatureForm) {
-                //Check optional parameters and add if any
-                let params = [
-                    `m=${this._shopId}`,
-                    `oa=${this._amount}`,
-                    `currency=${this._currency}`,
-                    `o=${this._paymentId}`,
-                    `s=${this._signatureForm}`
-                ]
-                let num
-                if (this._paymentOption) {
-                    num = params.push(`i=${this._paymentOption}`)
+            return new Promise ((resolve, reject) => {
+                try {
+                    if (!this._amount || !this._currency || !this._paymentId || !this._signatureForm || !this._key || !this._shopId) {
+                        throw false
+                    }
+                    //Mandatory parameters
+                    let requestBody = [
+                        `m=${this._shopId}`,
+                        `oa=${this._amount}`,
+                        `currency=${this._currency}`,
+                        `o=${this._paymentId}`,
+                        `s=${this._signatureForm}`
+                    ]
+                    //Optional parameters
+                    let num
+                    if (this._i) {
+                        num = requestBody.push(`i=${this._i}`)
+                    }
+                    if (this._tel) {
+                        num = requestBody.push(`phone=${this._tel}`)
+                    }
+                    if (this._email) {
+                        num = requestBody.push(`em=${this._email}`)
+                    }
+                    if (this._lang) {
+                        num = requestBody.push(`lang=${this._lang}`)
+                    }
+                    resolve(`${this._payUrl}/?${requestBody.join('&')}`)
+
+                } catch(e) {
+                    reject(e)
                 }
-                if (this._tel) {
-                    num = params.push(`phone=${this._tel}`)
+            })
+            .catch(e => e)
+        },
+
+        //Orders list. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly
+        orders () {
+            return new Promise ((resolve, reject) => {
+                try {
+                    if (!this._key || !this._shopId) {
+                        throw false
+                    }
+                    //Mandatory props
+                    let requestBody = {
+                        shopId: parseInt(this._shopId)
+                    }
+                    //Optional props
+                    if (this._paymentId) {
+                        requestBody.paymentId = this._paymentId.toString()
+                    }
+                    if (this._orderId) {
+                        requestBody.orderId = parseInt(this._orderId)
+                    }
+                    if (this._orderStatus) {
+                        requestBody.orderStatus = parseInt(this._orderStatus)
+                    }
+                    if (this._dateFrom) {
+                        requestBody.dateFrom = this._dateFrom.toString()
+                    }
+                    if (this._dateTo) {
+                        requestBody.dateTo = this._dateTo.toString()
+                    }
+                    if (this._page) {
+                        requestBody.page = parseInt(this._page)
+                    }
+                    this._request('POST', `${this._apiUrl}/orders`, requestBody)
+                        .then(response => resolve(response))
+
+                } catch(e) {
+                    reject(e)
                 }
-                if (this._email) {
-                    num = params.push(`em=${this._email}`)
-                }
-                if (this._lang) {
-                    num = params.push(`lang=${this._lang}`)
-                }
-                return `${this._payUrl}/?${params.join('&')}`
-            } else {
-                return false
-            }
+            })
+            .catch(e => e)
         },
 
         //Create order. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly

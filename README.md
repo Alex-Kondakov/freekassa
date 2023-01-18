@@ -61,28 +61,28 @@ freekassa.shopId = 12345
 * **shops** - Get list of shops. Returns promise. Promise resolves to false if MANDATORY parameters set incorrectly (mandatory props: *key*, *shopId*).
 
 ## Available props
-* payUrl (default 'https://pay.freekassa.ru') - Payment form base URL
-* apiUrl (default 'https://api.freekassa.ru/v1') - API base URL
-* lang (default 'ru') - Payment form language
-* currency (default 'RUB') - Payment or withdrawal currency
-* key (default null) - API key
-* secret1 (default null) - Secret word #1
-* secret2 (default ull) - Secret word #2
-* shopId (default null) - Shop (merchant) ID
-* paymentId (default null) - Payment id on merchant side
-* orderId (default null) - Order (payment) id on Freekassa side
-* orderStatus (default null) - Order (payment) id on Freekassa side (statuses available: 0 - new, 1 - success, 8 - fail, 9 - cancel)
-* amount (default null) - Payment amount
-* i (default null) - Payment method id (payment systems available: https://docs.freekassa.ru/#section/1.-Vvedenie/1.7.-Spisok-dostupnyh-valyut)
-* tel (default null) - Customer phone number
-* email (default null) - Customer email
-* ip (default null) - Customer IP
-* account (default null) - Payment system wallet (for withdrawals request, for example)
-* dateFrom (default null) - Data selection FROM date (for withdrawals or orders selection)
-* dateTo (default null) - Data selection TO date (for withdrawals or orders selection)
-* page (default null) - Data selection page number (for withdrawals or orders selection)
-* success_url (default null) - Custom success url (this option must be enabled by Freekassa)
-* failure_url (default null) - Custom failure uel (this option must be enabled by Freekassa)
-* notification_url (default null) - Custom notification url (this option must be enabled by Freekassa)
-* signatureForm (default null) - Signature for form generation
-* signatureNotification (default null) - Signature to confirm notifications from Freekassa
+* **payUrl** (default *'https://pay.freekassa.ru'*) - Payment form base URL
+* **apiUrl** (default *'https://api.freekassa.ru/v1'*) - API base URL
+* **lang** (default *'ru'*) - Payment form language
+* **currency** (default *'RUB'*) - Payment or withdrawal currency
+* **key** (default *null*) - API key
+* **secret1** (default *null*) - Secret word #1
+* **secret2** (default *null*) - Secret word #2
+* **shopId** (default *null*) - Shop (merchant) ID
+* **paymentId** (default *null*) - Payment id on merchant side
+* **orderId** (default *null*) - Order (payment) id on Freekassa side
+* **orderStatus** (default *null*) - Order (payment) id on Freekassa side (statuses available: 0 - new, 1 - success, 8 - fail, 9 - cancel)
+* **amount** (default *null*) - Payment amount
+* **i**(default *null*) - Payment method id (payment systems available: https://docs.freekassa.ru/#section/1.-Vvedenie/1.7.-Spisok-dostupnyh-valyut)
+* **tel** (default *null*) - Customer phone number
+* **email** (default *null*) - Customer email
+* **ip** (default *null*) - Customer IP
+* **account** (default *null*) - Payment system wallet (for withdrawals request, for example)
+* **dateFrom** (default *null*) - Data selection FROM date (for withdrawals or orders selection)
+* **dateTo** (default *null*) - Data selection TO date (for withdrawals or orders selection)
+* **page** (default *null*) - Data selection page number (for withdrawals or orders selection)
+* **success_url** (default *null*) - Custom success url (this option must be enabled by Freekassa)
+* **failure_url** (default *null*) - Custom failure uel (this option must be enabled by Freekassa)
+* **notification_url** (default *null*) - Custom notification url (this option must be enabled by Freekassa)
+* **signatureForm** (default *null*) - Signature for form generation
+* **signatureNotification** (default *null*) - Signature to confirm notifications from Freekassa

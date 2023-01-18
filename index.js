@@ -4,7 +4,6 @@ const fetch = require('node-fetch')
 //Init parameters are required to generate signatures
 exports.init = () => {
     return {
-        //MANDATORY
         _payUrl: 'https://pay.freekassa.ru', //Payment form base URL
         _apiUrl: 'https://api.freekassa.ru/v1', //API base URL
         _lang: 'ru', //Payment form language
@@ -202,11 +201,11 @@ exports.init = () => {
             this._signatureNotification = crypto.createHash('md5').update(`${this._shopId}:${this._amount}:${this._secret2}:${this._paymentId}`).digest('hex').toString()
         },
 
-        //Create payment form link. Method generate url with accesible request parameters. Returns payment form URL or false is fail
+        //Create payment form link. Method generate url with accesible request parameters. Returns promise. Promise resolves to payment form URL or false if fail
         create () {
             return new Promise ((resolve, reject) => {
                 try {
-                    if (!this._amount || !this._currency || !this._paymentId || !this._signatureForm || !this._key || !this._shopId) {
+                    if (!this._amount || !this._currency || !this._paymentId || !this._signatureForm || !this._shopId) {
                         throw false
                     }
                     //Mandatory parameters

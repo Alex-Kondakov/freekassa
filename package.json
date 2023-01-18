@@ -1,5 +1,5 @@
 {
-  "name": "freekassa",
+  "name": "@alex-kondakov/freekassa",
   "version": "0.0.1",
   "description": "Freekassa.ru Node.js SDK",
   "main": "index.js",

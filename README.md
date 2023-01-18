@@ -73,7 +73,7 @@ freekassa.shopId = 12345
 * **orderId** (default *null*) - Order (payment) id on Freekassa side
 * **orderStatus** (default *null*) - Order (payment) id on Freekassa side (statuses available: 0 - new, 1 - success, 8 - fail, 9 - cancel)
 * **amount** (default *null*) - Payment amount
-* **i**(default *null*) - Payment method id (payment systems available: https://docs.freekassa.ru/#section/1.-Vvedenie/1.7.-Spisok-dostupnyh-valyut)
+* **i** (default *null*) - Payment method id (payment systems available: https://docs.freekassa.ru/#section/1.-Vvedenie/1.7.-Spisok-dostupnyh-valyut)
 * **tel** (default *null*) - Customer phone number
 * **email** (default *null*) - Customer email
 * **ip** (default *null*) - Customer IP

@@ -28,7 +28,7 @@ exports.init = () => {
         _failure_url: null, //Custom failure uel (this option must be enabled by Freekassa)
         _notification_url: null, //Custom notification url (this option must be enabled by Freekassa)
         _signatureForm: null, //Signature for form generation
-        _signatureNotification: null, //Signature to confirm notifications from Freekassa
+        //_signatureNotification: null, //Signature to confirm notifications from Freekassa
 
 
         //SETTERS
@@ -198,7 +198,7 @@ exports.init = () => {
         //Generate new signatures
         sign () {
             this._signatureForm = crypto.createHash('md5').update(`${this._shopId}:${this._amount}:${this._secret1}:${this._currency}:${this._paymentId}`).digest('hex').toString()
-            this._signatureNotification = crypto.createHash('md5').update(`${this._shopId}:${this._amount}:${this._secret2}:${this._paymentId}`).digest('hex').toString()
+            //this._signatureNotification = crypto.createHash('md5').update(`${this._shopId}:${this._amount}:${this._secret2}:${this._paymentId}`).digest('hex').toString()
         },
 
         //Create payment form link. Method generate url with accesible request parameters. Returns promise. Promise resolves to payment form URL or false if fail

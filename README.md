@@ -85,4 +85,3 @@ freekassa.shopId = 12345
 * **failure_url** (default *null*) - Custom failure uel (this option must be enabled by Freekassa)
 * **notification_url** (default *null*) - Custom notification url (this option must be enabled by Freekassa)
 * **signatureForm** (default *null*) - Signature for form generation
-* **signatureNotification** (default *null*) - Signature to confirm notifications from Freekassa

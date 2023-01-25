@@ -1,6 +1,6 @@
 {
   "name": "@alex-kondakov/freekassa",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Freekassa.ru Node.js SDK",
   "main": "index.js",
   "scripts": {

@@ -38,7 +38,7 @@ const freekassa = require('@alex-kondakov/freekassa').init()
 
 //Set props
 freekassa.key = 'API key'
-freekassa.shopId = 12345
+freekassa.shopId = 12345;
 
 //Make request
 (async () => {
